@@ -24,7 +24,7 @@ class NewslettersViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
 
     def get_permissions(self):
-        if self.action in ['list', 'test_admin', 'target_votar', 'suscriptions']:
+        if self.action in ['list', 'target_votar', 'suscriptions']:
             permission_classes = (IsAuthenticated,)
         elif self.action in ['create']:
             permission_classes = (IsAdminUser,)
@@ -55,27 +55,6 @@ class NewslettersViewSet(viewsets.ModelViewSet):
                 return Response(status=status.HTTP_400_BAD_REQUEST, data=newsletter.errors)
         else:
             return Response({"mensaje": "Owner no es administrador"}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Pruebas para los diferentes roles
-    @action(methods=['GET', 'POST', 'DELETE'], detail=True)
-    def test_admin(self, req, pk=None):
-        if req.method == 'GET':
-            newsletter = self.get_object()
-            for guest in newsletter.guests.all():
-
-                if guest.id == self.request.user.id:
-                    print("The guest is: ", guest.username)
-
-                else:
-                    print('No guest')
-
-            admin = User.objects.get(username=self.request.user)
-            print('Admin:', admin.username)
-
-            newsletter = self.get_object()
-            print('Owner: ', newsletter.owner.username)
-
-            return Response(status=status.HTTP_200_OK)
 
     @action(methods=['GET'], detail=True)
     def owner(self, req, pk=None):
@@ -191,10 +170,5 @@ class NewletterListUser(ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        # query = {}
-        # query['subscribers__id'] = self.request.user.id
-        # self.queryset = self.queryset.filter(**query)
-        # return super().get_queryset()
-
         my_subscritions = Newsletter.objects.filter(subscribers=self.request.user.id)
         return my_subscritions
